@@ -253,11 +253,11 @@ def get_connection_string(config: Dict):
 
     Returns: A MongoClient connection string
     """
-    srv = config.get('srv') == 'true'
+    srv = config.get('srv') == True
 
     # Default SSL verify mode to true, give option to disable
-    verify_mode = config.get('verify_mode', 'true') == 'true'
-    use_ssl = config.get('ssl') == 'true'
+    verify_mode = config.get('verify_mode', 'true') == True
+    use_ssl = config.get('ssl') == True
 
     connection_query = {
         'readPreference': 'secondaryPreferred',
@@ -268,15 +268,15 @@ def get_connection_string(config: Dict):
         connection_query['replicaSet'] = config['replica_set']
 
     if use_ssl:
-        connection_query['tls'] = 'true'
+        connection_query['tls'] = True
 
     # NB: "sslAllowInvalidCertificates" must ONLY be supplied if `SSL` is true.
     if not verify_mode and use_ssl:
-        connection_query['tlsAllowInvalidCertificates'] = 'true'
+        connection_query['tlsAllowInvalidCertificates'] = True
 
     query_string = parse.urlencode(connection_query)
 
-    port = "" if srv else f":{int(config['port'])}"
+    port = "" if srv else f":{int(config.get('port', 27017))}"
 
     connection_string = f'{"mongodb+srv" if srv else "mongodb"}://{config["user"]}:' \
                         f'{config["password"]}@{config["host"]}' \
@@ -291,7 +291,7 @@ def main_impl():
     """
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     config = args.config
-    srv = config.get('srv') == 'true'
+    srv = config.get('srv') == True
 
     if not srv:
         args = utils.parse_args(REQUIRED_CONFIG_KEYS_NON_SRV)
@@ -305,7 +305,7 @@ def main_impl():
                 client.server_info().get('version', 'unknown'))
 
     common.INCLUDE_SCHEMAS_IN_DESTINATION_STREAM_NAME = \
-        (config.get('include_schemas_in_destination_stream_name') == 'true')
+        (config.get('include_schemas_in_destination_stream_name') == True)
 
     if args.discover:
         do_discover(client, config)
