@@ -12,9 +12,11 @@ from typing import Dict, Any, Optional
 from bson import objectid, timestamp, datetime as bson_datetime
 from singer import utils, metadata
 from terminaltables import AsciiTable
+from functools import reduce
 
 from tap_mongodb.errors import MongoInvalidDateTimeException, SyncException, UnsupportedKeyTypeException
 
+CUSTOM_SCHEMA_NAME_REPLACE_MAP = None
 SDC_DELETED_AT = "_sdc_deleted_at"
 INCLUDE_SCHEMAS_IN_DESTINATION_STREAM_NAME = False
 UPDATE_BOOKMARK_PERIOD = 1000
@@ -35,6 +37,9 @@ def calculate_destination_stream_name(stream: Dict) -> str:
     s_md = metadata.to_map(stream['metadata'])
     if INCLUDE_SCHEMAS_IN_DESTINATION_STREAM_NAME:
         return f"{s_md.get((), {}).get('database-name')}-{stream['stream']}"
+        
+    if CUSTOM_SCHEMA_NAME_REPLACE_MAP:
+        return reduce(lambda x,y: x.replace(list(y.keys())[0], y[list(y.keys())[0]]), CUSTOM_SCHEMA_NAME_REPLACE_MAP, stream['stream'])
 
     return stream['stream']
 
