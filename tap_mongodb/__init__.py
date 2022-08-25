@@ -268,11 +268,11 @@ def get_connection_string(config: Dict):
         connection_query['replicaSet'] = config['replica_set']
 
     if use_ssl:
-        connection_query['tls'] = True
+        connection_query['tls'] = 'true'
 
     # NB: "sslAllowInvalidCertificates" must ONLY be supplied if `SSL` is true.
     if not verify_mode and use_ssl:
-        connection_query['tlsAllowInvalidCertificates'] = True
+        connection_query['tlsAllowInvalidCertificates'] = 'true'
 
     query_string = parse.urlencode(connection_query)
 
@@ -306,6 +306,8 @@ def main_impl():
 
     common.INCLUDE_SCHEMAS_IN_DESTINATION_STREAM_NAME = \
         (config.get('include_schemas_in_destination_stream_name') == True)
+        
+    common.CUSTOM_SCHEMA_NAME_REPLACE_MAP = config.get('custom_schema_name_replace_map', None)
 
     if args.discover:
         do_discover(client, config)
